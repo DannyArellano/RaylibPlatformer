@@ -1,0 +1,10 @@
+{
+    "tileWidth": 128,
+    "tileHeight": 128,
+    "tiles": [
+        { "x": 0, "y": 0, "isCollidable": true, "tileIndex": 0 },
+        { "x": 128, "y": 0, "isCollidable": false, "tileIndex": 1 },
+        { "x": 256, "y": 0, "isCollidable": true, "tileIndex": 2 },
+        { "x": 400, "y": 364, "isCollidable": true, "tileIndex": 0 }
+    ]
+}
