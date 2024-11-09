@@ -1,31 +1,35 @@
 #ifndef TILEMAP_HPP
 #define TILEMAP_HPP
 
+#include <vector>
 #include "raylib.h"
 #include "json.hpp"
-#include <vector>
-#include <string>
+
+struct Tile {
+    int id;
+    Rectangle sourceRect;
+    Rectangle destRect;
+    int type;
+};
 
 class Tilemap {
 public:
-    Tilemap(const std::string& jsonFile, const std::string& tilesheetFile, int tileWidth, int tileHeight);
-    ~Tilemap();
-    void LoadFromFile(const std::string& jsonFile);
-    void Draw() const;
-    bool CheckCollision(const Rectangle& rect) const;
+    Tilemap(const std::string& jsonFile);
+    void Draw();
+    bool IsColliding(const Rectangle& rect) const;
 
+    int GetWidth() const { return map.empty() ? 0 : map[0].size(); }
+    int GetHeight() const { return map.size(); }
+    int GetTileWidth() const { return tileWidth; }
+    int GetTileHeight() const { return tileHeight; }
+    Vector2 GetLastTilePosition() const;
 private:
-    struct Tile {
-        Rectangle rect;
-        bool isCollidable;
-        int tileIndex; // Index of the tile in the tilesheet
-    };
-
-    std::vector<Tile> tiles;
+    std::vector<std::vector<Tile>> map;
+    Texture2D tileTexture;
     int tileWidth;
     int tileHeight;
-    Texture2D tilesheet;
-    int tilesheetColumns;
+
+    void LoadFromJson(const std::string& jsonFile);
 };
 
 #endif // TILEMAP_HPP

@@ -6,13 +6,11 @@
 	],
 	"settings": {
 		"files.associations": {
-			".fantomasignore": "ignore",
 			"raylib.h": "c",
 			"math.h": "c",
 			"blocks.h": "c",
 			"stdio.h": "c",
-			"*.m": "c",
-			"iostream": "cpp"
+			"*.m": "c"
 		}
 	}
 }

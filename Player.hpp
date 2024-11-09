@@ -2,32 +2,48 @@
 #define PLAYER_HPP
 
 #include "raylib.h"
-#include "tilemap.hpp"
+#include "Tilemap.hpp"
+#include <vector>
+#include "ObjPool.hpp"
+#include "Dot.hpp"
 
 class Player {
 public:
-    Player(Vector2 pos, float alt, Color col);
-    void Update(float gravity, float dt, const Tilemap& tilemap);
-    void Draw() const;
+    Player(Vector2 position, float speed, Camera2D& camera);
+    void Update(const Tilemap& tilemap);
+    void Draw();
+    Vector2 GetPosition() const;
+    void SetColor(Color color);
+    void SetColorTimer(float time);
+    Rectangle GetCollisionRect() const;
 
 private:
     Vector2 position;
     Vector2 velocity;
-    float altura;
-    Color color;
+    float speed;
+    float gravity;
     bool isJumping;
+    bool spriteFlip;
+    Rectangle sourceRect;
 
-    // Animation members
-    Texture2D spriteSheet;
-    int frameWidth;
-    int frameHeight;
+    Texture2D spritesheet;
+    std::vector<Rectangle> idleFrames;
+    std::vector<Rectangle> runFrames;
+    std::vector<Rectangle> jumpFrames;
     int currentFrame;
-    int maxFrames;
     float frameTime;
-    float currentFrameTime;
+    float frameCounter;
+    Color color;
+    float colorTimer;
 
-    void UpdateAnimation(float dt);
-    bool CheckCollisionWithTilemap(const Tilemap& tilemap) const;
+    ObjectPool<Dot> dotPool;
+    std::vector<Dot*> activeDots;
+
+    
+    void UpdateAnimation();
+    void HandleInput();
+    void UpdateDots();
+    Camera2D& camera;
 };
 
 #endif // PLAYER_HPP

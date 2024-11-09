@@ -1,76 +1,207 @@
 #include "Player.hpp"
-#include "Tilemap.hpp"
-#include <iostream> // For debug prints
+#include <string> // For std::to_string
+#include "raylib.h"
+#include "raymath.h"
+#include <algorithm>
 
-Player::Player(Vector2 pos, float alt, Color col)
-    : position(pos), altura(alt), color(col), isJumping(false), currentFrame(0), frameTime(0.1f), currentFrameTime(0.0f) {
+Player::Player(Vector2 position, float speed, Camera2D& camera)
+    : dotPool(10), position(position), speed(speed), gravity(0.5f), isJumping(false), currentFrame(0), frameTime(0.1f), frameCounter(0.0f), camera(camera) { // Initialize bullet pool with 10 bullets
     velocity = {0, 0};
+    spritesheet = LoadTexture("assets/spritesheet_players.png");
 
-    // Load the sprite sheet
-    spriteSheet = LoadTexture("assets/spritesheet_player.png");
-    frameWidth = spriteSheet.width / 7; // Assuming 7 frames per row
-    frameHeight = spriteSheet.height / 8; // Assuming 8 rows (idle, walking, etc.)
-
-    // Check for division by zero
-    if (frameWidth == 0 || frameHeight == 0) {
-        std::cerr << "Error: Frame width or height is zero. Check the sprite sheet dimensions." << std::endl;
-        frameWidth = 1; // Set a default value to avoid division by zero
-        frameHeight = 1; // Set a default value to avoid division by zero
+    if (spritesheet.id == 0) {
+        DrawText("Failed to load spritesheet!", 10, 10, 20, RED);
     }
 
-    maxFrames = 4; // Number of frames per animation
+    // Define frame dimensions
+    const int frameWidth = 130;
+    const int frameHeight = 160;
+    spriteFlip = false;
+
+    // Define idle frames
+    idleFrames = {
+        {0, 1898, frameWidth, frameHeight}
+    };
+
+    // Define run frames
+    runFrames = {
+        {0, 100, frameWidth, frameHeight},
+        {0, 360, frameWidth, frameHeight},
+    };
+
+    // Define jump frames
+    jumpFrames = {
+        {0, 611, frameWidth, frameHeight},
+        {0, 869, frameWidth, frameHeight},
+    };
 }
 
-void Player::Update(float gravity, float dt, const Tilemap& tilemap) {
+void Player::Update(const Tilemap& tilemap) {
+    Vector2 oldPosition = position;
+
+    // Horizontal movement
+    if (IsKeyDown(KEY_D)) {
+        velocity.x = speed;
+        spriteFlip = false; // Not flipped
+    } else if (IsKeyDown(KEY_A)) {
+        velocity.x = -speed;
+        spriteFlip = true; // Flipped
+    } else {
+        velocity.x = 0;
+    }
+
     // Apply gravity
-    velocity.y += gravity * dt;
+    velocity.y += gravity;
 
-    // Update position
-    position.x += velocity.x * dt;
-    position.y += velocity.y * dt;
+    // Update horizontal position
+    position.x += velocity.x;
 
-    // Check for collisions
-   /*  if (CheckCollisionWithTilemap(tilemap)) {
-        // Handle collision
-        velocity.y = 0;
-        isJumping = false;
-    } */
+    // Check for horizontal collisions
+    if (tilemap.IsColliding(GetCollisionRect())) {
+        position.x = oldPosition.x; // Revert to old horizontal position if colliding
+    }
 
-    // Update animation
-    UpdateAnimation(dt);
+    // Update vertical position
+    position.y += velocity.y;
+
+    // Check for vertical collisions
+    if (tilemap.IsColliding(GetCollisionRect())) {
+        position.y = oldPosition.y; // Revert to old vertical position if colliding
+        velocity.y = 0; // Stop vertical movement
+        isJumping = false; // Reset jumping flag
+    }
+
+    // Jumping
+    if (IsKeyPressed(KEY_SPACE) && !isJumping) {
+        velocity.y = -10.0f; // Jump strength
+        isJumping = true;
+    }
+    if (colorTimer > 0.0f) {
+        colorTimer -= GetFrameTime();
+        if (colorTimer <= 0.0f) {
+            color = WHITE; // Reset color to white
+        }
+    }
+    HandleInput();
+    UpdateAnimation();
+    UpdateDots();
 }
 
-void Player::UpdateAnimation(float dt) {
-    currentFrameTime += dt;
-    if (currentFrameTime >= frameTime) {
-        currentFrameTime = 0.0f;
+void Player::UpdateAnimation() {
+    frameCounter += GetFrameTime();
+    if (frameCounter >= frameTime) {
+        frameCounter = 0.0f;
         currentFrame++;
-        if (currentFrame >= maxFrames) {
-            currentFrame = 0;
+        if (isJumping) {
+            if (currentFrame >= (int)jumpFrames.size()) currentFrame = 0;
+        } else if (velocity.x != 0) {
+            if (currentFrame >= (int)runFrames.size()) currentFrame = 0;
+        } else {
+            if (currentFrame >= (int)idleFrames.size()) currentFrame = 0;
         }
     }
 }
 
-void Player::Draw() const {
-    // Define the vertical offset (e.g., 10 pixels of empty space between rows)
-    int verticalOffset = 10;
+void Player::Draw() {
+    if (isJumping) {
+        sourceRect = jumpFrames[currentFrame];
+    } else if (velocity.x != 0) {
+        sourceRect = runFrames[currentFrame];
+    } else {
+        sourceRect = idleFrames[currentFrame];
+    }
 
-    // Determine the source rectangle based on the current frame
-    int row = (velocity.x != 0) ? 1 : 0; // Row 0 for idle, 1 for walking
-    Rectangle sourceRect = { 
-        static_cast<float>(currentFrame * frameWidth), 
-        static_cast<float>(row * (frameHeight + verticalOffset)), // Add vertical offset
-        static_cast<float>(frameWidth), 
-        static_cast<float>(frameHeight) 
-    };
-    Rectangle destRect = { position.x, position.y, static_cast<float>(frameWidth), static_cast<float>(frameHeight) };
+    // Flip the source rectangle width if spriteFlip is true
+    if (spriteFlip) {
+        sourceRect.width = -abs(sourceRect.width);
+    } else {
+        sourceRect.width = abs(sourceRect.width);
+    }
+    // Define the destination rectangle with scaling
+    float scale = 0.5f; // Scale down to 50%
+    Rectangle destRect = {position.x, position.y, abs(sourceRect.width) * scale, sourceRect.height * scale};
 
-    // Draw the current frame
-    DrawTexturePro(spriteSheet, sourceRect, destRect, {0, 0}, 0.0f, WHITE);
+    // Adjust the destination rectangle position if the sprite is flipped
+    if (spriteFlip) {
+        destRect.x -= destRect.width;
+    }
+    // Draw the player using the spritesheet with scaling
+    DrawTexturePro(spritesheet, sourceRect, destRect, {sourceRect.width * scale / 2, sourceRect.height * scale}, 0.0f, WHITE);
+    for (Dot* dot : activeDots) {
+        dot->Draw();
+    }
 }
 
-/* bool Player::CheckCollisionWithTilemap(const Tilemap& tilemap) const {
-    // Implement collision detection with the tilemap
-    // Return true if collision detected, otherwise false
-    // Placeholder implementation
-} */
+void Player::HandleInput() {
+    // Existing input handling code...
+
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        Vector2 mousePosition = GetMousePosition();
+        Vector2 worldMousePosition = GetScreenToWorld2D(mousePosition, camera);
+        Vector2 direction = { worldMousePosition.x - position.x, worldMousePosition.y - position.y };
+
+        // Normalize the direction vector
+        float length = sqrt(direction.x * direction.x + direction.y * direction.y);
+        if (length != 0) {
+            direction.x /= length;
+            direction.y /= length;
+        }
+
+        Vector2 playerPosition = { position.x, position.y - sourceRect.height / 4 };
+        Dot* dot = dotPool.Get();
+        if (dot) {
+            dot->Activate(playerPosition);
+            dot->SetDirection(direction);
+            dot->SetSpeed(600.0f);
+            activeDots.push_back(dot);
+        } else {
+            // No available dots, remove the oldest dot from activeDots and return it to the dotPool
+            if (!activeDots.empty()) {
+                Dot* oldestDot = activeDots.front();
+                activeDots.erase(activeDots.begin());
+                dotPool.Return(oldestDot);
+            }
+            // Try to get a new dot again after removing the oldest dot
+            dot = dotPool.Get();
+            if (dot) {
+                dot->Activate(playerPosition); // Offset the new dot
+                dot->SetDirection(direction);
+                dot->SetSpeed(600.0f);
+                activeDots.push_back(dot);
+            }
+        }
+    }
+    float deltaTime = GetFrameTime();
+    for (Dot* dot : activeDots) {
+        dot->Update(deltaTime);
+    }
+}
+
+void Player::UpdateDots() {
+    for (auto it = activeDots.begin(); it != activeDots.end(); ) {
+        Dot* dot = *it;
+        if (!dot->IsActive()) {
+            dotPool.Return(dot);
+            it = activeDots.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+Rectangle Player::GetCollisionRect() const {
+    float scale = 0.5f; // Scale down to 50%
+    return {position.x - (130 * scale) / 2, position.y - (160 * scale), 130 * scale, 160 * scale}; // Adjusted to match the sprite size
+}
+
+Vector2 Player::GetPosition() const {
+    return position;
+}
+
+void Player::SetColor(Color newColor) {
+    color = newColor;
+}
+
+void Player::SetColorTimer(float time) {
+    colorTimer = time;
+}
