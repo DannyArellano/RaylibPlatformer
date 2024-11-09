@@ -59,9 +59,9 @@ void SceneManager::ChangeScene(Scene newScene) {
 
     if (newScene == Scene::GAME) {
         // Initialize game objects
-        player = new Player({290, 400}, 5.0f, camera);
+        player = new Player({64, 668}, 5.0f, camera);
         tilemap = new Tilemap("level1.json");
-        enemy = new Enemy({1000, 400}, 5.0f);
+        enemy = new Enemy({600, 668}, 5.0f);
         Vector2 lastTilePosition = tilemap->GetLastTilePosition();
         Vector2 levelChangerPosition = { lastTilePosition.x - 32, lastTilePosition.y - 32};
         levelChanger = new LevelChanger(levelChangerPosition, 0.0f);

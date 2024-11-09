@@ -72,7 +72,7 @@ void Player::Update(const Tilemap& tilemap) {
 
     // Jumping
     if (IsKeyPressed(KEY_SPACE) && !isJumping) {
-        velocity.y = -10.0f; // Jump strength
+        velocity.y = -11.0f; // Jump strength
         isJumping = true;
     }
     if (colorTimer > 0.0f) {
