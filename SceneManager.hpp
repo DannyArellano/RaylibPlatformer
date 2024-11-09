@@ -11,7 +11,8 @@ enum class Scene {
     MAIN_MENU,
     GAME,
     VICTORY,
-    LOSING
+    LOSING,
+    EMPTY
 };
 
 class SceneManager {
@@ -38,6 +39,9 @@ private:
     void UpdateLosing();
     void DrawLosing();
     bool IsButtonClicked(Rectangle button);
+    void Cleanup();
+    void UpdateEmpty();
+    void DrawEmpty();
 };
 
 #endif // SCENEMANAGER_HPP
