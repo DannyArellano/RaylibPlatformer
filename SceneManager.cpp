@@ -63,7 +63,7 @@ void SceneManager::ChangeScene(Scene newScene) {
         tilemap = new Tilemap("level1.json");
         enemy = new Enemy({1000, 400}, 5.0f);
         Vector2 lastTilePosition = tilemap->GetLastTilePosition();
-        Vector2 levelChangerPosition = { lastTilePosition.x - 128, lastTilePosition.y - 128};
+        Vector2 levelChangerPosition = { lastTilePosition.x - 32, lastTilePosition.y - 32};
         levelChanger = new LevelChanger(levelChangerPosition, 0.0f);
     } else {
         // Clean up game objects
@@ -129,7 +129,7 @@ void SceneManager::UpdateGame() {
     if (CheckCollisionRecs(enemy->GetCollisionRect(), player->GetCollisionRect())) {
         ChangeScene(Scene::LOSING);
     }
-    if (CheckCollisionRecs(levelChanger->GetCollisionRect(), player->GetCollisionRect())) {
+    else if (CheckCollisionRecs(levelChanger->GetCollisionRect(), player->GetCollisionRect())) {
         ChangeScene(Scene::VICTORY);
     }
     // Add your victory condition here
