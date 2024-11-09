@@ -129,6 +129,9 @@ void SceneManager::UpdateGame() {
     if (CheckCollisionRecs(enemy->GetCollisionRect(), player->GetCollisionRect())) {
         ChangeScene(Scene::LOSING);
     }
+    else if (CheckCollisionRecs(levelChanger->GetRect(), player->GetCollisionRect())) {
+        ChangeScene(Scene::VICTORY);
+    }
     // Add your victory condition here
 }
 
@@ -139,6 +142,7 @@ void SceneManager::DrawGame() {
     tilemap->Draw();
     player->Draw();
     enemy->Draw();
+    levelChanger->Draw();
     EndMode2D();
     EndDrawing();
 }
