@@ -7,7 +7,6 @@
 #include "Enemy.hpp"
 #include "LevelChanger.hpp"
 
-
 enum class Scene {
     MAIN_MENU,
     GAME,
@@ -27,8 +26,8 @@ private:
     Player* player;
     Tilemap* tilemap;
     Enemy* enemy;
-    Camera2D camera; // Add the camera as a member
     LevelChanger* levelChanger;
+    Camera2D camera;
 
     void UpdateMainMenu();
     void DrawMainMenu();
@@ -38,6 +37,7 @@ private:
     void DrawVictory();
     void UpdateLosing();
     void DrawLosing();
+    bool IsButtonClicked(Rectangle button);
 };
 
 #endif // SCENEMANAGER_HPP
