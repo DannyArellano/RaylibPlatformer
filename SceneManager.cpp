@@ -1,6 +1,12 @@
 #include "SceneManager.hpp"
 
+// Initialize the static instance variable
+
 SceneManager::SceneManager() {
+    background = LoadTexture("assets/MainScreen.png");
+    backgroundMain = LoadTexture("assets/MainScreen.png");
+    backgroundVictory = LoadTexture("assets/WinScreen.png");
+    backgroundLosing = LoadTexture("assets/LoseScreen.png");
     currentScene = Scene::MAIN_MENU;
     player = nullptr;
     tilemap = nullptr;
@@ -13,6 +19,14 @@ SceneManager::SceneManager() {
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
 }
+
+SceneManager::~SceneManager() {
+    UnloadTexture(background);
+    UnloadTexture(backgroundMain);
+    UnloadTexture(backgroundVictory); 
+    UnloadTexture(backgroundLosing);
+}
+
 
 void SceneManager::Update() {
     switch (currentScene) {
@@ -107,10 +121,7 @@ void SceneManager::DrawMainMenu() {
     Rectangle button2 = { 300, 500, 200, 50 };
 
     BeginDrawing();
-    ClearBackground(GRAY);
-    DrawText("Main Menu", 350, 200, 40, WHITE);
-    DrawText("Press ENTER to Play", 300, 300, 20, WHITE);
-    DrawText("Press ESC to Exit", 300, 350, 20, WHITE);
+    ClearBackground(BLACK);
     DrawRectangleRec(button1, WHITE);
     DrawRectangleRec(button2, WHITE);
     DrawText("Play", 370, 420, 20, BLACK); // Text for the first button
@@ -137,7 +148,7 @@ void SceneManager::UpdateGame() {
 
 void SceneManager::DrawGame() {
     BeginDrawing();
-    ClearBackground(GRAY);
+    ClearBackground(BLACK);
     BeginMode2D(camera);
     tilemap->Draw();
     player->Draw();
@@ -156,7 +167,6 @@ void SceneManager::UpdateVictory() {
 void SceneManager::DrawVictory() {
     BeginDrawing();
     ClearBackground(GRAY);
-    DrawText("Victory!", 350, 200, 40, WHITE);
     DrawText("Press ENTER to Return to Main Menu", 250, 300, 20, WHITE);
     EndDrawing();
 }
@@ -170,7 +180,6 @@ void SceneManager::UpdateLosing() {
 void SceneManager::DrawLosing() {
     BeginDrawing();
     ClearBackground(GRAY);
-    DrawText("You Lost!", 350, 200, 40, WHITE);
     DrawText("Press ENTER to Return to Main Menu", 250, 300, 20, WHITE);
     EndDrawing();
 }

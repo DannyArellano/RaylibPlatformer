@@ -20,16 +20,24 @@ public:
     SceneManager();
     void Update();
     void Draw();
+    ~SceneManager();
     void ChangeScene(Scene newScene);
 
 private:
+    SceneManager(const SceneManager&) = delete; // Delete copy constructor
+    SceneManager& operator=(const SceneManager&) = delete; // Delete copy assignment operator
+
     Scene currentScene;
     Player* player;
     Tilemap* tilemap;
     Enemy* enemy;
     LevelChanger* levelChanger;
     Camera2D camera;
-
+    Texture2D background;
+    Texture2D backgroundMain;
+    Texture2D backgroundVictory;
+    Texture2D backgroundLosing;
+    
     void UpdateMainMenu();
     void DrawMainMenu();
     void UpdateGame();

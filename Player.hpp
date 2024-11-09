@@ -44,6 +44,7 @@ private:
     void UpdateAnimation();
     void HandleInput();
     void UpdateDots();
+    bool IsCollidingWithEnemy();
 };
 
 #endif // PLAYER_HPP
