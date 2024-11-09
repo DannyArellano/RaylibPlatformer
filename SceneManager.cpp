@@ -6,7 +6,6 @@ SceneManager::SceneManager() {
     tilemap = nullptr;
     enemy = nullptr;
     levelChanger = nullptr;
-
     // Initialize the camera
     camera = { 0 };
     camera.target = { 0.0f, 0.0f };
@@ -29,6 +28,9 @@ void SceneManager::Update() {
         case Scene::LOSING:
             UpdateLosing();
             break;
+        case Scene::EMPTY:
+            UpdateEmpty();
+            break;
     }
 }
 
@@ -45,6 +47,9 @@ void SceneManager::Draw() {
             break;
         case Scene::LOSING:
             DrawLosing();
+            break;
+        case Scene::EMPTY:
+            DrawEmpty();
             break;
     }
 }
@@ -80,14 +85,36 @@ void SceneManager::UpdateMainMenu() {
     if (IsKeyPressed(KEY_ESCAPE)) {
         CloseWindow();
     }
+    Vector2 mousePoint = GetMousePosition();
+    Rectangle button1 = { 300, 400, 200, 50 };
+    Rectangle button2 = { 300, 500, 200, 50 };
+
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        if (CheckCollisionPointRec(mousePoint, button1)) {
+            // Handle the first button click
+            ChangeScene(Scene::GAME);
+        }
+        if (CheckCollisionPointRec(mousePoint, button2)) {
+            // Handle the second button click
+            Cleanup();
+            ChangeScene(Scene::EMPTY);
+        }
+    }
 }
 
 void SceneManager::DrawMainMenu() {
+    Rectangle button1 = { 300, 400, 200, 50 };
+    Rectangle button2 = { 300, 500, 200, 50 };
+
     BeginDrawing();
     ClearBackground(GRAY);
     DrawText("Main Menu", 350, 200, 40, WHITE);
     DrawText("Press ENTER to Play", 300, 300, 20, WHITE);
     DrawText("Press ESC to Exit", 300, 350, 20, WHITE);
+    DrawRectangleRec(button1, WHITE);
+    DrawRectangleRec(button2, WHITE);
+    DrawText("Play", 370, 420, 20, BLACK); // Text for the first button
+    DrawText("Exit", 370, 520, 20, BLACK); // Text for the second button
     EndDrawing();
 }
 
@@ -102,9 +129,6 @@ void SceneManager::UpdateGame() {
     if (CheckCollisionRecs(enemy->GetCollisionRect(), player->GetCollisionRect())) {
         ChangeScene(Scene::LOSING);
     }
-    if (CheckCollisionRecs(levelChanger->GetCollisionRect(), player->GetCollisionRect())) {
-        ChangeScene(Scene::VICTORY);
-    }
     // Add your victory condition here
 }
 
@@ -115,7 +139,6 @@ void SceneManager::DrawGame() {
     tilemap->Draw();
     player->Draw();
     enemy->Draw();
-    levelChanger->Draw();
     EndMode2D();
     EndDrawing();
 }
@@ -146,4 +169,33 @@ void SceneManager::DrawLosing() {
     DrawText("You Lost!", 350, 200, 40, WHITE);
     DrawText("Press ENTER to Return to Main Menu", 250, 300, 20, WHITE);
     EndDrawing();
+}
+
+void SceneManager::Cleanup() {
+    // Add cleanup code here
+    if (player) {
+        delete player;
+        player = nullptr;
+    }
+    if (tilemap) {
+        delete tilemap;
+        tilemap = nullptr;
+    }
+    if (enemy) {
+        delete enemy;
+        enemy = nullptr;
+    }
+    if (levelChanger) {
+        delete levelChanger;
+        levelChanger = nullptr;
+    }
+    // Add any other necessary cleanup
+}
+
+void SceneManager::UpdateEmpty() {
+    CloseWindow();
+}
+
+void SceneManager::DrawEmpty() {
+    // Nothing to draw for the empty scene
 }

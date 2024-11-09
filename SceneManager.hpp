@@ -7,11 +7,13 @@
 #include "Enemy.hpp"
 #include "LevelChanger.hpp"
 
+
 enum class Scene {
     MAIN_MENU,
     GAME,
     VICTORY,
-    LOSING
+    LOSING,
+    EMPTY
 };
 
 class SceneManager {
@@ -26,8 +28,8 @@ private:
     Player* player;
     Tilemap* tilemap;
     Enemy* enemy;
+    Camera2D camera; // Add the camera as a member
     LevelChanger* levelChanger;
-    Camera2D camera;
 
     void UpdateMainMenu();
     void DrawMainMenu();
@@ -37,7 +39,9 @@ private:
     void DrawVictory();
     void UpdateLosing();
     void DrawLosing();
-    bool IsButtonClicked(Rectangle button);
+    void Cleanup();
+    void UpdateEmpty();
+    void DrawEmpty();
 };
 
 #endif // SCENEMANAGER_HPP

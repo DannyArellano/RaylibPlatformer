@@ -9,7 +9,6 @@ public:
     LevelChanger(Vector2 pos, float spd);
     void Update();
     void Draw();
-    Rectangle GetCollisionRect() const; // Add this method
 };
 
 // LevelChanger.cpp

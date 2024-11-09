@@ -5,9 +5,9 @@
 #include <algorithm>
 
 Player::Player(Vector2 position, float speed, Camera2D& camera)
-    : position(position), velocity({0, 0}), speed(speed), gravity(0.5f), isJumping(false), spriteFlip(false), sourceRect({0, 0, 0, 0}),
-      spritesheet(LoadTexture("assets/spritesheet_players.png")), idleFrames(), runFrames(), jumpFrames(), currentFrame(0), frameTime(0.1f), frameCounter(0.0f),
-      color(WHITE), colorTimer(0.0f), dotPool(10), activeDots(), camera(camera) { // Initialize bullet pool with 10 bullets
+    : dotPool(10), position(position), speed(speed), gravity(0.5f), isJumping(false), currentFrame(0), frameTime(0.1f), frameCounter(0.0f), camera(camera) { // Initialize bullet pool with 10 bullets
+    velocity = {0, 0};
+    spritesheet = LoadTexture("assets/spritesheet_players.png");
 
     if (spritesheet.id == 0) {
         DrawText("Failed to load spritesheet!", 10, 10, 20, RED);
@@ -16,6 +16,7 @@ Player::Player(Vector2 position, float speed, Camera2D& camera)
     // Define frame dimensions
     const int frameWidth = 130;
     const int frameHeight = 160;
+    spriteFlip = false;
 
     // Define idle frames
     idleFrames = {

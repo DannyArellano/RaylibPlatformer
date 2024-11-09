@@ -9,7 +9,3 @@ void LevelChanger::Update() {
 void LevelChanger::Draw() {
     DrawRectangleV(position, {32, 32}, GREEN); // Assuming each tile is 32x32
 }
-
-Rectangle LevelChanger::GetCollisionRect() const {
-    return { position.x, position.y, 32, 32 }; // Assuming each tile is 32x32
-}
