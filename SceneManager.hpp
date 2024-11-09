@@ -12,7 +12,8 @@ enum class Scene {
     GAME,
     VICTORY,
     LOSING,
-    EMPTY
+    EMPTY,
+    LEVEL2
 };
 
 class SceneManager {
@@ -50,6 +51,13 @@ private:
     void Cleanup();
     void UpdateEmpty();
     void DrawEmpty();
+    void UpdateLevel2();
+    void DrawLevel2();
+    void CheckDotEnemyCollisions();
+    bool CheckCollision(Dot* dot, Enemy* enemy);
+    std::vector<Dot*> dots;
+    std::vector<Enemy*> enemies;
+    
 };
 
 #endif // SCENEMANAGER_HPP

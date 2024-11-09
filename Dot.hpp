@@ -13,6 +13,7 @@ public:
     bool IsActive() const;
     void SetDirection(Vector2 direction);
     void SetSpeed(float speed);
+    Vector2 GetPosition() const{ return position; };
 
 private:
     Vector2 position;
