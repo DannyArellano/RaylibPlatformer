@@ -1,6 +1,12 @@
 #include "SceneManager.hpp"
 
+// Initialize the static instance variable
+
 SceneManager::SceneManager() {
+    background = LoadTexture("assets/MainScreen.png");
+    backgroundMain = LoadTexture("assets/MainScreen.png");
+    backgroundVictory = LoadTexture("assets/WinScreen.png");
+    backgroundLosing = LoadTexture("assets/LoseScreen.png");
     currentScene = Scene::MAIN_MENU;
     player = nullptr;
     tilemap = nullptr;
@@ -13,6 +19,14 @@ SceneManager::SceneManager() {
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
 }
+
+SceneManager::~SceneManager() {
+    UnloadTexture(background);
+    UnloadTexture(backgroundMain);
+    UnloadTexture(backgroundVictory); 
+    UnloadTexture(backgroundLosing);
+}
+
 
 void SceneManager::Update() {
     switch (currentScene) {
@@ -28,28 +42,38 @@ void SceneManager::Update() {
         case Scene::LOSING:
             UpdateLosing();
             break;
+        case Scene::LEVEL2: // Add this case
+            UpdateLevel2();
+            break;
         case Scene::EMPTY:
             UpdateEmpty();
             break;
     }
+    CheckDotEnemyCollisions();
 }
 
 void SceneManager::Draw() {
     switch (currentScene) {
         case Scene::MAIN_MENU:
+            DrawTexture(backgroundMain, 0, 0, WHITE);
             DrawMainMenu();
             break;
         case Scene::GAME:
             DrawGame();
             break;
         case Scene::VICTORY:
+            DrawTexture(backgroundVictory, 0, 0, WHITE);
             DrawVictory();
             break;
         case Scene::LOSING:
+            DrawTexture(backgroundLosing, 0, 0, WHITE);
             DrawLosing();
             break;
         case Scene::EMPTY:
             DrawEmpty();
+            break;
+        case Scene::LEVEL2: // Add this case
+            DrawLevel2();
             break;
     }
 }
@@ -59,13 +83,20 @@ void SceneManager::ChangeScene(Scene newScene) {
 
     if (newScene == Scene::GAME) {
         // Initialize game objects
-        player = new Player({290, 400}, 5.0f, camera);
+        player = new Player({64, 668}, 5.0f, camera);
         tilemap = new Tilemap("level1.json");
-        enemy = new Enemy({1000, 400}, 5.0f);
+        enemy = new Enemy({600, 668}, 5.0f);
         Vector2 lastTilePosition = tilemap->GetLastTilePosition();
-        Vector2 levelChangerPosition = { lastTilePosition.x - 128, lastTilePosition.y - 128};
+        Vector2 levelChangerPosition = { lastTilePosition.x - 32, lastTilePosition.y - 32};
         levelChanger = new LevelChanger(levelChangerPosition, 0.0f);
-    } else {
+    }else if(newScene == Scene::LEVEL2){
+        player = new Player({64, 668}, 5.0f, camera);
+        tilemap = new Tilemap("level2.json");
+        enemy = new Enemy({600, 570}, 5.0f);
+        Vector2 lastTilePosition = tilemap->GetLastTilePosition();
+        Vector2 levelChangerPosition = { lastTilePosition.x - 32, lastTilePosition.y - 32};
+        levelChanger = new LevelChanger(levelChangerPosition, 0.0f);
+    }else {
         // Clean up game objects
         delete player;
         delete tilemap;
@@ -107,10 +138,7 @@ void SceneManager::DrawMainMenu() {
     Rectangle button2 = { 300, 500, 200, 50 };
 
     BeginDrawing();
-    ClearBackground(GRAY);
-    DrawText("Main Menu", 350, 200, 40, WHITE);
-    DrawText("Press ENTER to Play", 300, 300, 20, WHITE);
-    DrawText("Press ESC to Exit", 300, 350, 20, WHITE);
+    ClearBackground(BLACK);
     DrawRectangleRec(button1, WHITE);
     DrawRectangleRec(button2, WHITE);
     DrawText("Play", 370, 420, 20, BLACK); // Text for the first button
@@ -119,6 +147,7 @@ void SceneManager::DrawMainMenu() {
 }
 
 void SceneManager::UpdateGame() {
+    CheckDotEnemyCollisions();
     player->Update(*tilemap);
     enemy->Update(*tilemap, *player);
 
@@ -129,15 +158,14 @@ void SceneManager::UpdateGame() {
     if (CheckCollisionRecs(enemy->GetCollisionRect(), player->GetCollisionRect())) {
         ChangeScene(Scene::LOSING);
     }
-    else if (CheckCollisionRecs(levelChanger->GetRect(), player->GetCollisionRect())) {
-        ChangeScene(Scene::VICTORY);
+    else if (CheckCollisionRecs(levelChanger->GetCollisionRect(), player->GetCollisionRect())) {
+        ChangeScene(Scene::LEVEL2);
     }
-    // Add your victory condition here
 }
 
 void SceneManager::DrawGame() {
     BeginDrawing();
-    ClearBackground(GRAY);
+    ClearBackground(BLACK);
     BeginMode2D(camera);
     tilemap->Draw();
     player->Draw();
@@ -156,7 +184,6 @@ void SceneManager::UpdateVictory() {
 void SceneManager::DrawVictory() {
     BeginDrawing();
     ClearBackground(GRAY);
-    DrawText("Victory!", 350, 200, 40, WHITE);
     DrawText("Press ENTER to Return to Main Menu", 250, 300, 20, WHITE);
     EndDrawing();
 }
@@ -170,7 +197,6 @@ void SceneManager::UpdateLosing() {
 void SceneManager::DrawLosing() {
     BeginDrawing();
     ClearBackground(GRAY);
-    DrawText("You Lost!", 350, 200, 40, WHITE);
     DrawText("Press ENTER to Return to Main Menu", 250, 300, 20, WHITE);
     EndDrawing();
 }
@@ -202,4 +228,58 @@ void SceneManager::UpdateEmpty() {
 
 void SceneManager::DrawEmpty() {
     // Nothing to draw for the empty scene
+}
+
+void SceneManager::UpdateLevel2() {
+    CheckDotEnemyCollisions();
+    player->Update(*tilemap);
+    enemy->Update(*tilemap, *player);
+
+    // Update camera target to follow the player
+    camera.target = player->GetPosition();
+
+    // Check for victory or losing conditions
+    if (CheckCollisionRecs(enemy->GetCollisionRect(), player->GetCollisionRect())) {
+        ChangeScene(Scene::LOSING);
+    }
+    else if (CheckCollisionRecs(levelChanger->GetCollisionRect(), player->GetCollisionRect())) {
+        ChangeScene(Scene::VICTORY);
+    }
+}
+
+void SceneManager::DrawLevel2() {
+    BeginDrawing();
+    ClearBackground(BLACK);
+    BeginMode2D(camera);
+    tilemap->Draw();
+    player->Draw();
+    enemy->Draw();
+    levelChanger->Draw();
+    EndMode2D();
+    EndDrawing();
+}
+
+void SceneManager::CheckDotEnemyCollisions() {
+    for (auto dot : dots) {
+        if (!dot->IsActive()) continue;
+        for (auto enemy : enemies) {
+            if (CheckCollision(dot, enemy)) {
+                delete enemy;
+                enemies.erase(std::remove(enemies.begin(), enemies.end(), enemy), enemies.end());
+                dot->Deactivate(); // Deactivate the dot after collision
+                break; // Exit the loop after deleting the enemy
+            }
+        }
+    }
+}
+
+bool SceneManager::CheckCollision(Dot* dot, Enemy* enemy) {
+    // Simple AABB collision detection
+    Vector2 dotPos = dot->GetPosition();
+    Vector2 enemyPos = enemy->GetPosition();
+    Vector2 enemySize = enemy->GetSize();
+    return (dotPos.x < enemyPos.x + enemySize.x &&
+            dotPos.x + 5 > enemyPos.x && // Assuming dot radius is 5
+            dotPos.y < enemyPos.y + enemySize.y &&
+            dotPos.y + 5 > enemyPos.y); // Assuming dot radius is 5
 }

@@ -3,9 +3,9 @@
 
 #include "raylib.h"
 #include "Tilemap.hpp"
-#include <vector>
 #include "ObjPool.hpp"
 #include "Dot.hpp"
+#include <vector>
 
 class Player {
 public:
@@ -39,11 +39,12 @@ private:
     ObjectPool<Dot> dotPool;
     std::vector<Dot*> activeDots;
 
-    
+    Camera2D& camera;
+
     void UpdateAnimation();
     void HandleInput();
     void UpdateDots();
-    Camera2D& camera;
+    bool IsCollidingWithEnemy();
 };
 
 #endif // PLAYER_HPP

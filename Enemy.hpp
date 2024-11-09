@@ -13,6 +13,7 @@ public:
     void Draw() const;
     Vector2 GetPosition() const;
     Rectangle GetCollisionRect() const;
+    Vector2 GetSize() const { return { (float)frameWidth, (float)frameHeight }; }
 
 private:
     Vector2 position;

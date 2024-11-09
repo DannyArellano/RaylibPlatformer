@@ -26,7 +26,7 @@ Player::Player(Vector2 position, float speed, Camera2D& camera)
     // Define run frames
     runFrames = {
         {0, 100, frameWidth, frameHeight},
-        {0, 360, frameWidth, frameHeight},
+        {0, 361, frameWidth, frameHeight},
     };
 
     // Define jump frames
@@ -73,7 +73,7 @@ void Player::Update(const Tilemap& tilemap) {
 
     // Jumping
     if (IsKeyPressed(KEY_SPACE) && !isJumping) {
-        velocity.y = -10.0f; // Jump strength
+        velocity.y = -11.0f; // Jump strength
         isJumping = true;
     }
     if (colorTimer > 0.0f) {
@@ -191,7 +191,9 @@ void Player::UpdateDots() {
 
 Rectangle Player::GetCollisionRect() const {
     float scale = 0.5f; // Scale down to 50%
-    return {position.x - (130 * scale) / 2, position.y - (160 * scale), 130 * scale, 160 * scale}; // Adjusted to match the sprite size
+    float width = (130 * scale) / 2; // Halve the width
+    float height = 160 * scale;
+    return {position.x - width / 2, position.y - height, width, height}; // Adjusted to match the sprite size
 }
 
 Vector2 Player::GetPosition() const {
