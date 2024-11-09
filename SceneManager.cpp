@@ -51,15 +51,18 @@ void SceneManager::Update() {
 void SceneManager::Draw() {
     switch (currentScene) {
         case Scene::MAIN_MENU:
+            DrawTexture(backgroundMain, 0, 0, WHITE);
             DrawMainMenu();
             break;
         case Scene::GAME:
             DrawGame();
             break;
         case Scene::VICTORY:
+            DrawTexture(backgroundVictory, 0, 0, WHITE);
             DrawVictory();
             break;
         case Scene::LOSING:
+            DrawTexture(backgroundLosing, 0, 0, WHITE);
             DrawLosing();
             break;
         case Scene::EMPTY:
